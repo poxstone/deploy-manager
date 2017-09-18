@@ -1,0 +1,43 @@
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+resources:
+- type: compute.alpha.router
+  name: {{ env["deployment"] }}-router
+  properties:
+     name: {{ env["name"] }}
+     network: $(ref.{{ env["deployment"] }}-network.selfLink)
+     region: {{ properties["region"] }}
+     interfaces:
+     {% for interface in properties["interfaces"] %}
+       {% set ipRange = interface["ipRange"] %}
+       {% set name = interface["name"] %}
+       {% set linkedVpnTunnel = interface["linkedVpnTunnel"] %}
+       - ipRange: {{ ipRange }}
+         linkedVpnTunnel: $(ref.{{ env["deployment"] }}-tunnel.selfLink)
+         name: {{ name }}
+     {% endfor %}
+     bgpPeers:
+     {% for peer in properties["bgpPeers"] %}
+       {% set name = peer["name"] %}
+       {% set ipAddress = peer["ipAddress"] %}
+       {% set peerAsn = peer["peerAsn"] %}
+       {% set advertisedRoutePriority = peer["advertisedRoutePriority"] %}
+       - name: {{ name }}
+         interfaceName: {{ name }}
+         ipAddress: {{ ipAddress }}
+         peerAsn: {{ peerAsn }}
+         advertisedRoutePriority: {{ advertisedRoutePriority }}
+     {% endfor %}
+     bgp:
+       asn: {{ properties["localAsn"] }}

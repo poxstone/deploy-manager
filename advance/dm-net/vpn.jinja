@@ -1,0 +1,91 @@
+# Copyright 2016 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+resources:
+- type: compute.v1.address
+  name: {{ env["deployment"] }}-address
+  properties:
+    region: {{ properties["region"] }}
+- type: compute.beta.targetVpnGateway
+  name: {{ env["deployment"] }}-gateway
+  properties:
+    name: {{ env["name"] }}
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    region: {{ properties["region"] }}
+- type: compute.v1.forwardingRules
+  name: {{ env["deployment"] }}-fr-esp
+  properties:
+    name: {{ env["name"] }}
+    region: {{ properties["region"] }}
+    IPProtocol: ESP
+    IPAddress: $(ref.{{ env["deployment"] }}-address.address)
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    target: $(ref.{{ env["deployment"] }}-gateway.selfLink)
+- type: compute.v1.forwardingRules
+  name: {{ env["deployment"] }}-fr-udp500
+  properties:
+    name: {{ env["name"] }}
+    region: {{ properties["region"] }}
+    IPProtocol: UDP
+    portRange: 500
+    IPAddress: $(ref.{{ env["deployment"] }}-address.address)
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    target: $(ref.{{ env["deployment"] }}-gateway.selfLink)
+- type: compute.v1.forwardingRules
+  name: {{ env["deployment"] }}-fr-udp4500
+  properties:
+    name: {{ env["name"] }}
+    region: {{ properties["region"] }}
+    IPProtocol: UDP
+    portRange: 4500
+    IPAddress: $(ref.{{ env["deployment"] }}-address.address)
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    target: $(ref.{{ env["deployment"] }}-gateway.selfLink)
+- type: compute.beta.vpnTunnel
+  name: {{ env["deployment"] }}-tunnel
+  properties:
+    ikeVersion: {{ properties["ikeVersion"] }}
+    forardingRule: $(ref.{{ env["deployment"] }}-fr-udp4500.selfLink)
+    localTrafficSelector:
+    {% for selector in properties["localTrafficSelector"] %}
+    - {{ selector }}
+    {% endfor %}
+    name: {{ env["name"] }}
+    region: {{ properties["region"] }}
+    peerIp: {{ properties["peerIp"] }}
+    sharedSecret: {{ properties["sharedSecret"] }}
+    targetVpnGateway: $(ref.{{ env["deployment"] }}-gateway.selfLink)
+- type: compute.v1.firewall
+  name: {{ env["deployment"] }}-vpn-rule
+  properties:
+    name: {{ env["name"] }}
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    sourceRanges:
+      - {{ properties["remoteTrafficSelector"] }}
+    allowed:
+      - IPProtocol: tcp
+      - IPProtocol: udp
+      - IPProtocol: icmp
+- type: compute.v1.route
+  name: {{ env["deployment"] }}-default-vpn-route
+  properties:
+    name: {{ env["name"] }}
+    network: $(ref.{{ env["deployment"] }}-network.selfLink)
+    nextHopVpnTunnel: $(ref.{{ env["deployment"] }}-tunnel.selfLink)
+    priority: 100
+    destRange: 0.0.0.0/0
+    tags:
+      - vpn
+outputs:
+- name: vpnGatewayIp
+  value: $(ref.{{ env["deployment"] }}-address.address)
