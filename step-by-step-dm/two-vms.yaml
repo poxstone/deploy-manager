@@ -17,6 +17,10 @@ resources:
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: true
+    networkInterfaces:
+    - network: $(ref.a-new-network.selfLink)
 - name: the-second-vm
   type: compute.v1.instance
   properties:
@@ -34,3 +38,11 @@ resources:
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: true
+    networkInterfaces:
+    - network: $(ref.a-new-network.selfLink)
+- name: a-new-network
+  type: compute.v1.network
+  properties:
+    IPv4Range: 10.0.0.1/16
