@@ -1,0 +1,37 @@
+resources:
+# [START basic_template]
+- name: vm-template
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: zones/us-central1-a/machineTypes/f1-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: projects/debian-cloud/global/images/family/debian-8
+    networkInterfaces:
+    - network: global/networks/default
+    scheduling:
+      preemptible: true
+# [END basic_template]
+# [START template_with_variables]
+- name: vm-{{ env["deployment"] }}
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: zones/{{ properties["zone"] }}/machineTypes/f1-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: projects/debian-cloud/global/images/family/debian-8
+    networkInterfaces:
+    - network: global/networks/default
+    scheduling:
+      preemptible: true
+# [END template_with_variables]

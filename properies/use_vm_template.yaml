@@ -1,0 +1,11 @@
+imports:
+- path: vm-template.jinja
+
+resources:
+- name: my-vm
+  type: vm-template.jinja
+# [END use_basic_template]
+  properties:
+    zone: us-central1-a
+# [END use_template_with_variables]
+# gcloud deployment-manager deployments create a-template-1 --config use_vm_template.yaml
