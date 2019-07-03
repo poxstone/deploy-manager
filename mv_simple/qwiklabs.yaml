@@ -1,0 +1,12 @@
+#gcloud deployment-manager deployments update deploy03 --config qwiklabs.yaml
+imports:
+- path: qwiklabs.jinja
+- path: firewall-template.jinja
+
+resources:
+- name: qwiklabs
+  type: qwiklabs.jinja
+  properties:
+    zone: us-central1-a
+- name: http-server
+  type: firewall-template.jinja

@@ -1,0 +1,37 @@
+
+resources:
+- type: compute.v1.instance
+  name: vm-test
+  properties:
+    zone: {{ properties["zone"] }}
+    machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/f1-micro
+    serviceAccounts:
+      - scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-{{ env["deployment"] }}
+        sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+    tags:
+        items: ["http"]
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          apt-get update -y;
+          apt-get install -y apache2;
+          systemctl start apache2;
+      #- key: startup-script-url
+      #  value: gs://qwiklabs-gcp-ce6414cc6c50a4c3/install-web.sh
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/global/networks/default
+      # Access Config required to give the instance a public IP address
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+

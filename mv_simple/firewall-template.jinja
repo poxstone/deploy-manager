@@ -1,0 +1,18 @@
+resources:
+- name: http
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/global/networks/default
+    sourceRanges: ["0.0.0.0/0"]
+    targetTags: ["http"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["80","443","8080"]
+- name: all
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/global/networks/default
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: all
+

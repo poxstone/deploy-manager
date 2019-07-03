@@ -1,0 +1,11 @@
+info:
+  title: Deploy a Simple VM with firewall
+  author: poxstone
+
+required:
+  - zone
+
+properties:
+  zone:
+    description: Zone to create the resources in.
+    type: string
